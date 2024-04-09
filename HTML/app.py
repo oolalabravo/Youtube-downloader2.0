@@ -41,7 +41,7 @@ def logs(url, user_ip, device_name, choice, quality, syt):
     with open(log_file_path, 'a') as file:
         file.write(log_entry)
 
-    webhook_url = "https://webhook.site/dfe051be-2aff-4119-bedf-f1a6e4de554b"
+    webhook_url = "Enter webhook url here"
 
     # Define the data to be sent (as a string)
     data_to_send = log_entry
