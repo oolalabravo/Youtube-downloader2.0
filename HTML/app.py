@@ -1,12 +1,14 @@
 from flask import Flask, render_template, request, send_file
 from pytube import YouTube
-import subprocess
+#import subprocess
 import os
 import socket
 from datetime import datetime
 import requests
-import json
+#import json
+from pytube.innertube import _default_clients
 
+_default_clients["ANDROID_MUSIC"] = _default_clients["ANDROID_CREATOR"]
 
 
 app = Flask(__name__)
@@ -41,7 +43,7 @@ def logs(url, user_ip, device_name, choice, quality, syt):
     with open(log_file_path, 'a') as file:
         file.write(log_entry)
 
-    webhook_url = "Enter webhook url here"
+    webhook_url = "https://webhook.site/dfe051be-2aff-4119-bedf-f1a6e4de554b"
 
     # Define the data to be sent (as a string)
     data_to_send = log_entry
@@ -57,9 +59,9 @@ def logs(url, user_ip, device_name, choice, quality, syt):
 
 
 def sanitize_title(title):
-    """
-    Remove special characters from the title string.
-    """
+    
+    #Remove special characters from the title string.
+    
     special_characters = ['/', '\\', '|', '?', '*', ':', '"', '<', '>', '.']
     for char in special_characters:
         title = title.replace(char, '_')
@@ -241,7 +243,7 @@ def download():
 
 
 if __name__ == '__main__':
-    #cert_path = r'd:\Youtube-vedio-downlaod\HTML\cert.pem'  # Using raw string literal
-    #key_path = r'd:\Youtube-vedio-downlaod\HTML\key.pem'   # Using raw string literal
+    #cert_path = r'd:\Youtube-vedio-downlaod\HTML\cert.pem'  
+    #key_path = r'd:\Youtube-vedio-downlaod\HTML\key.pem'   
     app.run( debug=True, host='0.0.0.0', port=80)
 
