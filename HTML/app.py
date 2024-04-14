@@ -5,7 +5,7 @@ import os
 import socket
 from datetime import datetime
 import requests
-#import json
+from PIL import Image
 from pytube.innertube import _default_clients
 
 _default_clients["ANDROID_MUSIC"] = _default_clients["ANDROID_CREATOR"]
@@ -15,6 +15,16 @@ app = Flask(__name__)
 
 
 filepa=''
+img=''
+n=''
+def get_tumb(url):
+    global img
+    global n
+    yt=YouTube(url)
+    img= yt.thumbnail_url
+    
+    n=yt.streams[0].title
+
 
 def logs(url, user_ip, device_name, choice, quality, syt):
     # parameters to retrieve from API
@@ -152,22 +162,27 @@ def audioquality(url):
 
 @app.route('/video_quality', methods=['POST'])
 def video_quality():
+    global img
+    global n
     url = request.form['url']
+    get_tumb(url)
     option = request.form['option']
     if option == 'video':
         streams_info = videoquality(url)
-        return render_template('video_quality.html', streams_info=streams_info, url=url, option=option)
+        return render_template('video_quality.html', streams_info=streams_info, url=url, option=option,image=img,nam=n)
     elif option == 'audio':
         audio_streams_info = audioquality(url)
-        return render_template('audio_quality.html', audio_streams_info=audio_streams_info, url=url, option=option)
+        return render_template('audio_quality.html', audio_streams_info=audio_streams_info, url=url, option=option,image=img,nam=n)
 
 @app.route('/audio_quality', methods=['POST'])
 def audio_quality():
+    global img
+    global n
     url = request.form['url']
     option = request.form['option']
     audio_streams_info = audioquality(url)
-    return render_template('audio_quality.html', audio_streams_info=audio_streams_info, url=url, option=option)
-import re
+    return render_template('audio_quality.html', audio_streams_info=audio_streams_info, url=url, option=option,image=img,nam=n)
+
 
 @app.route('/thankuu')
 def thank():
@@ -181,6 +196,7 @@ def download():
     url = request.form['url']
     option = request.form['option']
     chosen_quality = request.form['chosen_quality']
+    
 
     if option == 'video':
         if chosen_quality == '160':
@@ -238,7 +254,7 @@ def download():
         # Fetching quote and author from the API
     category = ''
     api_url = 'https://api.api-ninjas.com/v1/quotes?category={}'.format(category)
-    response = requests.get(api_url, headers={'X-Api-Key': 'Your API Key'})
+    response = requests.get(api_url, headers={'X-Api-Key': 'Your API key'})
 
     quote = None
     author = None
