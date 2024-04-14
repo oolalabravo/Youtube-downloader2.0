@@ -234,8 +234,22 @@ def download():
     logs(url, request.remote_addr, socket.gethostname(), option, chosen_quality, user_agent)
     
     filepa=file_path
+    #Get quote
+        # Fetching quote and author from the API
+    category = ''
+    api_url = 'https://api.api-ninjas.com/v1/quotes?category={}'.format(category)
+    response = requests.get(api_url, headers={'X-Api-Key': 'Your API Key'})
+
+    quote = None
+    author = None
+
+    if response.status_code == requests.codes.ok:
+        data = response.json()
+        if data and len(data) > 0:
+            quote = data[0].get('quote')
+            author = data[0].get('author')
     # Render the "thankyou.html" template
-    return render_template('thankyou.html')
+    return render_template('thankyou.html',author=author,quote=quote)
 
 
 
