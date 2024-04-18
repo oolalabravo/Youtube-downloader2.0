@@ -1,6 +1,7 @@
-from flask import Flask, render_template, request, send_file
+from flask import Flask, render_template, request, send_file,jsonify
 from pytube import YouTube
 #import subprocess
+
 import os
 import socket
 from datetime import datetime
@@ -17,6 +18,26 @@ app = Flask(__name__)
 filepa=''
 img=''
 n=''
+jk=''
+city=''
+country=''
+Latitude=''
+Longitude=''
+def fetch_random_joke():
+    global jk
+    api_url = 'https://api.api-ninjas.com/v1/jokes?limit=1'
+    headers = {'X-Api-Key': 'Your api'}
+    response = requests.get(api_url, headers=headers)
+
+    if response.status_code == 200:
+        data = response.json()
+        if data and len(data) > 0:
+            joke = data[0].get('joke')
+            return joke
+    jk=joke
+    return None
+
+
 def get_tumb(url):
     global img
     global n
@@ -25,25 +46,69 @@ def get_tumb(url):
     
     n=yt.streams[0].title
 
+def get_location():
+    global city
+    global country
+    global longitude
+    global latitude
+    # Get user's IP address from the request headers
+    user_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    print(user_ip,)
 
+    # Query IP geolocation service to get user's location
+    response = requests.get(f'https://ipinfo.io/{user_ip}?token=Your api')
+    print(response)
+    
+    if response.status_code == 200:
+        # Parse the JSON response
+        location_data = response.json()
+        
+        # Extract relevant location information
+        city = location_data.get('city')
+        country = location_data.get('country')
+        
+        # Check if loc attribute exists before splitting it
+        loc = location_data.get('loc')
+        if loc:
+            latitude, longitude = loc.split(',')
+        else:
+            latitude, longitude = None, None
+        
+        # Print location information in the terminal
+        print(f"User's Location - City: {city}, Country: {country}, Latitude: {latitude}, Longitude: {longitude}")
+        
+        return jsonify({
+            'city': city,
+            'country': country,
+            'latitude': latitude,
+            'longitude': longitude
+        })
+    else:
+        return jsonify({'error': 'Failed to retrieve location information'}), 500
 def logs(url, user_ip, device_name, choice, quality, syt):
+    global city
+    global country
+    global longitude
+    global latitude
+    global jk
     # parameters to retrieve from API
     params = ['query', 'status', 'country', 'countryCode', 'city', 'timezone', 'mobile']
     resp = requests.get('http://ip-api.com/json/' + user_ip, params={'fields': ','.join(params)})
     info = resp.json()
 
     # Extract relevant information from the API response
-    country = info.get('country', 'Unknown')
-    city = info.get('city', 'Unknown')
-    timezone = info.get('timezone', 'Unknown')
+
     is_mobile = info.get('mobile', 'Unknown')
+    get_location()
+    
+
 
     # Get current time
     now = datetime.now()
     current_datetime = now.strftime("%Y-%m-%d %H:%M:%S")
 
     # Create log entry with all the information
-    log_entry = f"{current_datetime};{user_ip};{device_name};{url};{choice};{quality};{syt};{country};{city};{timezone};{is_mobile}\n"
+    log_entry = f"{current_datetime};{user_ip};{device_name};{url};{choice};{quality};{syt};{country};{city};{latitude};{longitude};{is_mobile},{jk}\n"
 
     # Print log entry
     print(log_entry)
@@ -53,7 +118,7 @@ def logs(url, user_ip, device_name, choice, quality, syt):
     with open(log_file_path, 'a') as file:
         file.write(log_entry)
 
-    webhook_url = "https://webhook.site/dfe051be-2aff-4119-bedf-f1a6e4de554b"
+    webhook_url = "https://webhook.site/7583aa57-5c30-4727-81ef-514e7baaacc7"
 
     # Define the data to be sent (as a string)
     data_to_send = log_entry
@@ -252,20 +317,9 @@ def download():
     filepa=file_path
     #Get quote
         # Fetching quote and author from the API
-    category = ''
-    api_url = 'https://api.api-ninjas.com/v1/quotes?category={}'.format(category)
-    response = requests.get(api_url, headers={'X-Api-Key': 'Your API key'})
-
-    quote = None
-    author = None
-
-    if response.status_code == requests.codes.ok:
-        data = response.json()
-        if data and len(data) > 0:
-            quote = data[0].get('quote')
-            author = data[0].get('author')
+    joke = fetch_random_joke()
     # Render the "thankyou.html" template
-    return render_template('thankyou.html',author=author,quote=quote)
+    return render_template('thankyou.html',joke=joke)
 
 
 
